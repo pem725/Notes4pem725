@@ -1,0 +1,49 @@
+---
+title: "The Playpen"
+format: html
+---
+
+Question:  I want to estimate the statistical power of a 2 x 2 x 2 x 3 design using a shiny app.  How can I do that?  
+
+
+```{r}
+# Load libraries
+library(tidyverse)
+
+# Define the parameters of the factorial design
+num_simulations <- 1000
+b_levels <- 2
+w_levels <- 3
+
+# Function to simulate data and perform ANOVA
+simulate_data <- function(n, b_levels, w_levels) {
+  # Generate random data
+  data <- array(rnorm(n * b_levels * b_levels * w_levels * w_levels), dim = c(n, b_levels, b_levels, w_levels, w_levels))
+  
+  # Flatten data for ANOVA
+  flattened_data <- array(data, dim = c(n, b_levels * b_levels * w_levels * w_levels)) %>%
+    as.data.frame() %>%
+    pivot_longer(cols = everything(), names_to = "variable") %>%
+    group_by(variable) %>%
+    summarise(value = list(value)) %>%
+    ungroup()
+  
+  # Perform ANOVA
+  anova_results <- aov(value ~ 1, data = flattened_data)
+  
+  # Extract p-value from ANOVA
+  p_value <- summary(anova_results)[[1]]$"Pr(>F)"[1]
+  
+  return(p_value < 0.05)
+}
+
+# Simulate multiple experiments and calculate power
+significant_results <- replicate(num_simulations, simulate_data(50, b_levels, w_levels))
+
+power <- mean(significant_results)
+print(paste("Statistical Power:", power))
+
+
+```
+
+
