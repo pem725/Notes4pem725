@@ -14,6 +14,8 @@ library(tidyverse)
 num_simulations <- 1000
 b_levels <- 2
 w_levels <- 3
+n <- 50
+
 
 # Function to simulate data and perform ANOVA
 simulate_data <- function(n, b_levels, w_levels) {
